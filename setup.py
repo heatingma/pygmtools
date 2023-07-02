@@ -87,12 +87,18 @@ filename={  'windows':{ '3.7':'a_star.cp37-win_amd64.pyd',
                         '3.8':'a_star.cpython-38-x86_64-linux-gnu.so',
                         '3.9':'a_star.cpython-39-x86_64-linux-gnu.so'}}
 
-if os_version == 'windows':
-    unzip_file(os.path.join(NAME,'a_star.zip'),NAME)
-else:
-    untar_file(os.path.join(NAME,'a_star.tar.gz'),NAME)
-
-lib = filename[os_version][python_version]
+dynamic_link = filename[os_version][python_version]
+if not os.path.exists(os.path.join(NAME,dynamic_link)):
+    if os_version == 'windows':
+        try:
+            unzip_file(os.path.join(NAME,'a_star.zip'),NAME)
+        except:
+            pass
+    else:
+        try:
+            untar_file(os.path.join(NAME,'a_star.tar.gz'),NAME)
+        except:
+            pass
 
 class UploadCommand(Command):
     """Support setup.py upload."""
@@ -140,7 +146,7 @@ setup(
     author=AUTHOR,
     url=URL,
     packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
-    package_data={NAME: [lib]},
+    package_data={NAME:[dynamic_link]},
     install_requires=REQUIRED,
     extras_require=EXTRAS,
     include_package_data=True,
