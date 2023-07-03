@@ -14,6 +14,7 @@ from setuptools import find_packages, setup, Command
 import tarfile
 import zipfile
 import os
+import distro
 
 def unzip_file(zip_file_path, extract_folder_path):
     with zipfile.ZipFile(zip_file_path, 'r') as zipObj:
@@ -35,9 +36,15 @@ def get_os_and_python_version():
     elif system.lower() == "darwin":
         os_version = "macos"
     elif system.lower() == "linux":
-        os_version = platform.linux_distribution()[0].lower()
+        os_version = distro.linux_distribution(full_distribution_name=False)[0].lower()
     else:
-        os_version = "unknown"
+        raise ValueError("Unknown System")
+    if (os_version == 'windows'):
+        if (python_version == '3.11'):
+            python_version = '3.10'
+    else:
+        if (python_version == '3.10') or (python_version == '3.11'):
+            python_version = '3.9'
     return os_version, python_version
 
 # Package meta-data.
