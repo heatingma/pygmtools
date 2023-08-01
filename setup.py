@@ -7,9 +7,10 @@
 import io
 import os
 import re
+import shutil
 from setuptools import find_packages, setup
 from wheel.bdist_wheel import bdist_wheel as _bdist_wheel, get_platform, get_abi_tag, tags
-
+from setuptools.command.install import install as _install
     
 def get_property(prop, project):
     result = re.search(r'{}\s*=\s*[\'"]([^\'"]*)[\'"]'.format(prop), open(project + '/__init__.py').read())
@@ -69,6 +70,15 @@ class BdistWheelCommand(_bdist_wheel):
         tag = (impl, abi_tag, plat_name)
         return tag
 
+
+class InstallCommand(_install):
+    def run(self):
+        try:
+            os.system("python pygmtools/astar/get_astar.py")
+        except:
+            pass
+        _install.run(self)
+           
       
 setup(
     name=NAME,
