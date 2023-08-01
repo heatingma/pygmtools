@@ -7,10 +7,7 @@
 import io
 import os
 import re
-import shutil
 from setuptools import find_packages, setup
-from setuptools.command.sdist import sdist as _sdist
-from setuptools.command.install import install as _install
 from wheel.bdist_wheel import bdist_wheel as _bdist_wheel, get_platform, get_abi_tag, tags
 
     
@@ -55,8 +52,6 @@ else:
 class BdistWheelCommand(_bdist_wheel):
     def run(self):
         os.system("python pygmtools/astar/get_astar.py")
-        if os.path.exists(os.path.join(NAME, 'astar')):
-           shutil.rmtree(os.path.join(NAME, 'astar'))
         super().run()
 
     def get_tag(self):
@@ -74,19 +69,7 @@ class BdistWheelCommand(_bdist_wheel):
         tag = (impl, abi_tag, plat_name)
         return tag
 
-
-class SdistCommand(_sdist):
-    def run(self):
-        _sdist.run(self)
-
-
-class InstallCommand(_install):
-    def run(self):
-        _install.run(self)
-        if os.path.exists(os.path.join(NAME, 'astar')):
-           shutil.rmtree(os.path.join(NAME, 'astar')) 
-              
-        
+      
 setup(
     name=NAME,
     version=about['__version__'],
@@ -123,8 +106,6 @@ setup(
     ],
     # $ setup.py publish support.
     cmdclass={
-        'install': InstallCommand,
-        'sdist': SdistCommand,
         'bdist_wheel': BdistWheelCommand,
     },
 )
