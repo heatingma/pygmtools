@@ -6,12 +6,12 @@
 
 import io
 import os
-import sys
-from shutil import rmtree
 import re
-from setuptools import find_packages, setup, Command
-from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
-
+import shutil
+from setuptools import find_packages, setup
+from wheel.bdist_wheel import bdist_wheel as _bdist_wheel, get_platform, get_abi_tag, tags
+from setuptools.command.sdist import sdist as _sdist
+from setuptools.command.install import install as _install
 
 def get_property(prop, project):
     result = re.search(r'{}\s*=\s*[\'"]([^\'"]*)[\'"]'.format(prop), open(project + '/__init__.py').read())
@@ -26,7 +26,7 @@ URL = 'https://pygmtools.readthedocs.io/'
 AUTHOR = get_property('__author__', NAME)
 VERSION = get_property('__version__', NAME)
 REQUIRED = [
-     'requests>=2.25.1', 'scipy>=1.4.1', 'Pillow>=7.2.0', 'numpy>=1.18.5', 'easydict>=1.7', 'appdirs>=1.4.4', 'tqdm>=4.64.1','wget>=3.2'
+     'requests>=2.25.1', 'scipy>=1.4.1', 'Pillow>=7.2.0', 'numpy>=1.18.5', 'easydict>=1.7', 'appdirs>=1.4.4', 'tqdm>=4.64.1', 'wget>=3.2'
 ]
 EXTRAS = {}
 
@@ -50,24 +50,41 @@ else:
     about['__version__'] = VERSION
  
     
-class CustomBdistWheelCommand(_bdist_wheel):
+class BdistWheelCommand(_bdist_wheel):
     def run(self):
-        ori_dir = os.getcwd()
-        os.chdir(os.path.join(NAME,'astar'))
-        os.system("python get_astar.py")
-        os.chdir(ori_dir)
-        self.root_is_pure = False
-        self.py_limited_api = False
+        os.system("python pygmtools/astar/get_astar.py")
+        if os.path.exists(os.path.join(NAME, 'astar')):
+           shutil.rmtree(os.path.join(NAME, 'astar'))
         super().run()
 
-        
-class UploadCommand(Command):
-    """Support setup.py upload."""
+    def get_tag(self):
+        if self.plat_name and not self.plat_name.startswith("macosx"):
+            plat_name = self.plat_name
+        else:
+            plat_name = get_platform(self.bdist_dir)
+        if plat_name in ("linux-x86_64", "linux_x86_64"):
+            plat_name = "manylinux"
+        plat_name = (plat_name.lower().replace("-", "_").replace(".", "_").replace(" ", "_"))
+        impl_name = tags.interpreter_name()
+        impl_ver = tags.interpreter_version()
+        impl = impl_name + impl_ver
+        abi_tag = str(get_abi_tag()).lower()
+        tag = (impl, abi_tag, plat_name)
+        return tag
+
+
+class SdistCommand(_sdist):
     def run(self):
-        os.system('twine upload dist/*')
-        sys.exit()
+        _sdist.run(self)
 
 
+class InstallCommand(_install):
+    def run(self):
+        _install.run(self)
+        if os.path.exists(os.path.join(NAME, 'astar')):
+           shutil.rmtree(os.path.join(NAME, 'astar')) 
+              
+        
 setup(
     name=NAME,
     version=about['__version__'],
@@ -77,7 +94,7 @@ setup(
     author=AUTHOR,
     url=URL,
     packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
-    package_data={NAME: ['*.pyd','*.so'], "tests": ["test_a_star/*"]},
+    package_data={NAME: ['*.pyd', '*.so', 'astar/*']},
     install_requires=REQUIRED,
     extras_require=EXTRAS,
     include_package_data=True,
@@ -87,7 +104,6 @@ setup(
         'License :: OSI Approved :: Mulan Permissive Software License v2 (MulanPSL-2.0)',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
@@ -105,7 +121,8 @@ setup(
     ],
     # $ setup.py publish support.
     cmdclass={
-        'upload': UploadCommand,
-        'bdist_wheel': CustomBdistWheelCommand,
+        'install': InstallCommand,
+        'sdist': SdistCommand,
+        'bdist_wheel': BdistWheelCommand,
     },
 )
