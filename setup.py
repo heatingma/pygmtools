@@ -65,7 +65,7 @@ class BdistWheelCommand(_bdist_wheel):
         else:
             plat_name = get_platform(self.bdist_dir)
         if plat_name in ("linux-x86_64", "linux_x86_64"):
-            plat_name = "manylinux"
+            plat_name = "manylinux2014_x86_64"
         plat_name = (plat_name.lower().replace("-", "_").replace(".", "_").replace(" ", "_"))
         impl_name = tags.interpreter_name()
         impl_ver = tags.interpreter_version()
