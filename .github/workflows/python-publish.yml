@@ -25,8 +25,8 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install build
         pip install wheel
+        pip install cython
     - name: Build package
       run: python setup.py sdist
     - name: Upload new version to PyPI
@@ -55,8 +55,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install wheel
-        pip install cython
+        pip install -r docs/publish_req.txt
     - name: Build Wheel
       run: |
         python setup.py bdist_wheel
@@ -86,8 +85,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install wheel
-          pip install cython
+          pip install -r docs/publish_req.txt
       - name: Build Wheel
         run: |
           python setup.py bdist_wheel
@@ -116,8 +114,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install wheel
-          pip install cython
+          pip install -r docs/publish_req.txt
       - name: Build Wheel
         run: |
           python setup.py bdist_wheel
