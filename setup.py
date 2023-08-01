@@ -11,11 +11,8 @@ import shutil
 from setuptools import find_packages, setup
 from setuptools.command.sdist import sdist as _sdist
 from setuptools.command.install import install as _install
-try:
-    from wheel.bdist_wheel import bdist_wheel as _bdist_wheel, get_platform, get_abi_tag, tags
-except ModuleNotFoundError:
-    os.system("pip install wheel")
-    from wheel.bdist_wheel import bdist_wheel as _bdist_wheel, get_platform, get_abi_tag, tags
+from wheel.bdist_wheel import bdist_wheel as _bdist_wheel, get_platform, get_abi_tag, tags
+
     
 def get_property(prop, project):
     result = re.search(r'{}\s*=\s*[\'"]([^\'"]*)[\'"]'.format(prop), open(project + '/__init__.py').read())
